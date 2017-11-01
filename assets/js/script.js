@@ -16,8 +16,11 @@ $("#add-train").on("click", function(event){
 
 	var trainName =	$("#train-name").val().trim();
 	var destination = $("#destination").val().trim();
-	var firstTrain = $("#first-train").val().trim();
+	var firstTrain = moment($("#first-train").val().trim(), "hh:mm A").format("X");
 	var frequency = $("#frequency").val().trim();
+
+
+	// var empStart = moment($("#start-input").val().trim(), "DD/MM/YY").format("X");
 
 	var newTrain = {
 		name: trainName,
@@ -26,9 +29,16 @@ $("#add-train").on("click", function(event){
 		frequency: frequency
 	};
 	database.ref().push(newTrain);
+// Clear input fields
+	$("#train-name").val("");
+	$("#destination").val("");
+	$("#first-train").val("");
+	$("#frequency").val("");
 
-	console.log(newTrain.name);
+	// console.log(newTrain.name);
 	alert("new train added");
+
+	return false;
 });
 
 database.ref().on("child_added", function(childSnap, prevChildKey){
@@ -39,9 +49,12 @@ database.ref().on("child_added", function(childSnap, prevChildKey){
 	var firstTrain = childSnap.val().first;
 	var frequency = childSnap.val().frequency;
 
-	var test = moment.unix(firstTrain).format("hh:mm");
-	console.log(test);
-	// var empStartPretty = moment.unix(empStart).format("MM/DD/YY");
-$("#train-time-table > tbody").append("<tr><td>" + trainName + "</td><td>" + destination + /* */"</td><td>" + frequency + "</td>")
+	var difference = moment().diff(moment.unix(firstTrain), "minutes");
+	var remainder = moment().diff(moment.unix(firstTrain), "minutes") % frequency;
+	var trainMinutes = frequency - remainder;
+
+	var arrival = moment().add(trainMinutes, 'm').format("hh:mm A");
+
+$("#train-time-table > tbody").append("<tr><td>" + trainName + "</td><td>" + destination + "</td><td>" + frequency + "</td><td>" + arrival + "</td><td>" + trainMinutes)
 
 });
